@@ -1,0 +1,36 @@
+import requests
+import re
+class Netspider():
+    def __init__(self,name):
+        self.name = name
+        self.url = "https://search.51job.com/list/000000,0,0,0,9,9,"+name+",2,{}.html"
+        self.headers = {'User-Agent':'Mozilla/5.0 (X11; Ubuntu; Linux   x86_64;rv:63.0) Gecko/20100101 Firefox/63.0'}
+
+    def murl(self):
+        return [self.url.format(i) for i in range(1,770)]
+    def get(self,url):
+        response = requests.get(url,headers=self.headers)
+        return response.content.decode("GBK")
+    def save(self,html_str,page_num):
+        file_name = "{}d{}y.html".format(self.name,page_num)
+        with open(file_name,"w") as f:
+            f.write(html_str)
+    def ml(self,html_str,page_num):
+        gslist = "gslist{}.txt".format(page_num)
+        data = str(re.findall(r'(?<=<a target="_blank" title=").*?(?=" href="https://jobs.51job.com/)|(?<=<span class="t[3-5]">).*?(?=</span>)',html_str))
+        with open(gslist,"w") as g:
+            g.write(data)
+
+
+    def run(self):
+        url_list = self.murl()
+        for url in url_list:
+            html_str = self.get(url)
+            page_num = url_list.index(url) + 1
+            self.save(html_str,page_num)
+            self.ml(html_str,page_num)
+
+
+if __name__ == "__main__":
+    Netspider = Netspider("python")
+    Netspider.run()
